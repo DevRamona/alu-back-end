@@ -1,25 +1,37 @@
 #!/usr/bin/python3
-''' Test request to parse API's
-'''
-import csv
+"""Script that gets user data (Todo list) from API
+and then export the result to csv file. """
+
 import json
 import requests
-import sys
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1].isdigit():
-        api_endpoint = "https://jsonplaceholder.typicode.com"
-        user_id = sys.argv[1]
-        user_data = requests.get(api_endpoint + "/users/" + user_id).json()
-        username = user_data.get('username')
-        todo_data = \
-            requests.get(api_endpoint + "/users/" + user_id + "/todos").\
-            json()
-        with open("{}.json".format(user_id), 'w') as json_file:
-            tasks = []
-            for task in todo_data:
-                tasks.append({'task': task['title'],
-                              'completed': task['completed'],
-                              'username': username})
-            data = {"{}".format(user_id): tasks}
-            json.dump(data, json_file)
+
+def main():
+    """main function"""
+    todo_url = 'https://jsonplaceholder.typicode.com/todos'
+
+    response = requests.get(todo_url)
+
+    output = {}
+
+    for todo in response.json():
+        user_id = todo.get('userId')
+        if user_id not in output.keys():
+            output[user_id] = []
+            user_url = 'https://jsonplaceholder.typicode.com/users/{}'.format(
+                user_id)
+            user_name = requests.get(user_url).json().get('username')
+
+        output[user_id].append(
+            {
+                "username": user_name,
+                "task": todo.get('title'),
+                "completed": todo.get('completed')
+            })
+
+    with open("todo_all_employees.json", 'w') as file:
+        json.dump(output, file)
+
+
+if __name__ == '__main__':
+    main()
