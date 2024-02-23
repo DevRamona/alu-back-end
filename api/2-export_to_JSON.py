@@ -23,4 +23,3 @@ if __name__ == "__main__":
                               'username': username})
             data = {"{}".format(user_id): tasks}
             json.dump(data, json_file)
-
